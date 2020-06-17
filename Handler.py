@@ -86,7 +86,6 @@ class Handler:
             zip_filename = f'{self.organ_code}_{self.danwei_zip_code}_{self.date}.zip'
         if compression:
             compression_opts = dict(method='zip',archive_name=csv_filename)
-            print(compression_opts)
             data.to_csv(zip_filename,sep='|',header=False,index=False,compression=compression_opts)
         data.to_csv(csv_filename,sep='|',header=False,index=False,encoding='utf-8')
         return
@@ -126,9 +125,8 @@ class Handler:
                 if type in ('xlsx', 'xls'):
                     data = self.readFile(file_path, book_type)
                     self.writeFile(data, book_type, compression)
-                    sg.popup('生成成功，请查看程序同级路径',
+                    sg.popup('生成成功，文件位于程序同级路径下',
                              font=("微软雅黑", 12), title='提示')
-                    return
                 else:
                     sg.popup('所选文件非Excel工作簿类型文件，请重试',
                              font=("微软雅黑", 12), title='提示')
