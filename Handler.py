@@ -10,7 +10,10 @@ class Handler:
         self.configReader()
         
     def appPath(self, relativepath):
-        """Returns the base application path."""
+        '''
+        项目基础位置定位。(解决打包后找不到相对路径下的文件)
+        Returns the base application path.
+        '''
         if hasattr(sys, 'frozen'):
             basePath = os.path.dirname(sys.executable)
             # Handles PyInstaller
@@ -20,6 +23,9 @@ class Handler:
         return os.path.join(basePath, relativepath)
 
     def createINI(self):
+        '''
+        创建配置文件
+        '''
         # 避免打包—复制的复杂操作，直接将新建一个ini文件再写入内容。
         if not self.code:
             self.code = sg.popup_get_text('请输入单位统一信用代码', font=("微软雅黑", 12),title="单位统一信用代码")
@@ -35,7 +41,7 @@ class Handler:
         ！csv_file_code = NHZJ
         ！zip_file_code = NHZJ
         '''
-        # 为了缩进好看点，字符串有几段多了空格，此处处理下
+        # 格式化上述字符串并写入配置文件
         content = content.split('！')
         content = [x.rstrip(' ') for x in content]
         with open(self.appPath('config.ini'), 'w+', encoding='utf-8') as file:
@@ -63,7 +69,8 @@ class Handler:
     def readFile(self,filePath,type):
         '''
         利用pandas读取工作表数据
-        return：sheet_datas : 工作簿中所有工作表对象 list
+        ：param filePath -> str:所需读取的文件路径
+        ：return data -> pd.DataFrame:获取到的数据集
         '''
         # 1.读取文件,只取第一张sheet
         data = pd.read_excel(filePath, sheet_name=0,header=0,na_values=[0],
@@ -74,9 +81,10 @@ class Handler:
 
     def writeFile(self,data,type,compression=False):
         '''
-        :params  data,dataframe,the data read form excel file
-        :params  type,str,danwei or nonghu
-        :params  compression,bool,output file compression option
+        利用pandas将文件写入CSV文件。
+        :params  data -> pd.DataFrame: 待写入的数据
+        :params  type -> str：表格种类(nonghu,danwei)
+        :params  compression ->bool:是否生成压缩包文件(True,False)
         '''
         if type =='nonghu':
             csv_filename = f'{self.organ_code}_{self.nonghu_csv_code}_{self.date}.csv'
@@ -87,13 +95,13 @@ class Handler:
         if compression:
             compression_opts = dict(method='zip',archive_name=csv_filename)
             data.to_csv(zip_filename,sep='|',header=False,index=False,compression=compression_opts)
+        #TODO 这里的编码是否正确？
         data.to_csv(csv_filename,sep='|',header=False,index=False,encoding='utf-8')
         return
 
     def gui(self):
         '''
-        简单GUI
-        :return: filepath  读取到的文件地址+文件名
+        利用PySimpleGUI写的一个简单操作交互界面
         '''
         layout = [
             [sg.Text('ini配置文件调整：更改统一社会信用代码。', size=(40, 1),font=("微软雅黑", 12)), sg.Button(
@@ -108,7 +116,7 @@ class Handler:
         ]
         window = sg.Window(
             'CSV格式化存储工具', default_element_size=(40, 3)).Layout(layout)
-        # TODO这里面的逻辑需要优化
+        # TODO 这里面的逻辑需要优化
         while True:
             button, values = window.Read()
             if button == 'createINI':
